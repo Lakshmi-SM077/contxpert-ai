@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ContXpert AI — Admin Login</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{
+      font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+      background:linear-gradient(135deg,#1B2A4A 0%,#2E7D6B 100%);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+    }
+    .card{
+      background:#fff;
+      border-radius:20px;
+      padding:40px 36px;
+      width:100%;
+      max-width:400px;
+      box-shadow:0 25px 60px rgba(0,0,0,.3);
+    }
+    .brand{
+      font-family:'Space Grotesk',sans-serif;
+      font-size:26px;
+      font-weight:700;
+      color:#1B2A4A;
+      text-align:center;
+      margin-bottom:4px;
+    }
+    .brand span{color:#2E7D6B;}
+    .tag{
+      text-align:center;
+      color:#8A8578;
+      font-size:13px;
+      margin-bottom:28px;
+    }
+    .form-group{margin-bottom:18px;}
+    label{
+      display:block;
+      font-size:12.5px;
+      font-weight:600;
+      color:#3A3F47;
+      margin-bottom:6px;
+    }
+    input{
+      width:100%;
+      padding:12px 14px;
+      border:2px solid #E4DFD3;
+      border-radius:10px;
+      font-size:14px;
+      transition:border-color .2s;
+    }
+    input:focus{outline:none;border-color:#2E7D6B;}
+    button{
+      width:100%;
+      padding:13px;
+      background:#2E7D6B;
+      color:#fff;
+      border:none;
+      border-radius:10px;
+      font-size:14px;
+      font-weight:600;
+      cursor:pointer;
+      transition:transform .15s,box-shadow .15s;
+    }
+    button:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(46,125,107,.4);}
+    .error{
+      background:#FEE2E2;
+      color:#991B1B;
+      padding:10px 14px;
+      border-radius:8px;
+      font-size:13px;
+      margin-bottom:16px;
+      display:none;
+    }
+    .error.show{display:block;}
+    .ai-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      background:#DCF4EC;
+      color:#215A4E;
+      font-size:11px;
+      font-weight:600;
+      padding:4px 10px;
+      border-radius:20px;
+      margin:0 auto 20px;
+      display:flex;
+      width:fit-content;
+    }
+    .ai-badge::before{
+      content:'';
+      width:6px;
+      height:6px;
+      background:#2E7D6B;
+      border-radius:50%;
+      animation:pulse 1.5s infinite;
+    }
+    @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">Cont<span>X</span>pert AI</div>
+    <div class="tag">Registrar's Desk — Certificate Queue</div>
+    <div class="ai-badge">AI-Powered Student Support</div>
+    <div class="error <%= error ? 'show' : '' %>"><%= error || '' %></div>
+    <form method="POST" action="/admin/login">
+      <div class="form-group">
+        <label>Staff Password</label>
+        <input type="password" name="password" placeholder="Enter admin password" required autofocus>
+      </div>
+      <button type="submit">Sign In</button>
+    </form>
+  </div>
+</body>
+</html>

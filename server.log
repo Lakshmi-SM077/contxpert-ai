@@ -1,0 +1,8 @@
+[Cron] Starting scheduled jobs...
+[Cron] Jobs scheduled (daily at 9:00 AM IST)
+
+🎓 ContXpert AI Server running on port 3002
+📱 Webhook: http://localhost:3002/webhook
+💻 Admin:   http://localhost:3002/admin
+🤖 AI Mode: LLM-powered intent detection + response generation
+

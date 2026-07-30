@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ContXpert AI — Registrar's Desk</title>
+  <style>
+    :root{
+      --ink:#1B2A4A;--paper:#FBF9F4;--teal:#2E7D6B;--teal-dark:#215A4E;
+      --marigold:#E8A33D;--slate:#3A3F47;--line:#E4DFD3;--panel:#FFFFFF;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{
+      font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+      background:var(--paper);color:var(--slate);min-height:100vh;
+      padding:28px 20px 60px;
+    }
+    .wrap{max-width:1180px;margin:0 auto;}
+    header{
+      display:flex;justify-content:space-between;align-items:flex-end;
+      margin-bottom:22px;flex-wrap:wrap;gap:14px;
+      border-bottom:2px solid var(--ink);padding-bottom:16px;
+    }
+    .brand{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:26px;color:var(--ink);}
+    .brand span{color:var(--teal);}
+    .tag{font-size:12.5px;color:#8A8578;margin-top:4px;}
+    .ai-pill{
+      display:inline-flex;align-items:center;gap:6px;
+      background:#DCF4EC;color:var(--teal-dark);
+      font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;
+    }
+    .ai-pill i{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:pulse 1.5s infinite;}
+    @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+    .controls{display:flex;gap:10px;align-items:center;}
+    .ctl{
+      font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13px;
+      border:none;padding:10px 18px;border-radius:8px;cursor:pointer;
+      background:var(--marigold);color:var(--ink);
+      transition:transform .15s,box-shadow .15s;text-decoration:none;
+    }
+    .ctl:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(232,163,61,.4);}
+    .ctl.secondary{background:transparent;border:1.5px solid var(--ink);color:var(--ink);}
+    .queue{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);}
+    @media(max-width:860px){.queue{grid-template-columns:1fr;}}
+    .col{background:var(--panel);padding:16px;min-height:420px;}
+    .col h3{
+      font-family:'Space Grotesk',sans-serif;font-size:12.5px;text-transform:uppercase;
+      letter-spacing:.06em;color:#8A8578;margin:0 0 12px;display:flex;justify-content:space-between;
+    }
+    .col h3 .count{background:var(--line);color:var(--ink);border-radius:10px;padding:1px 8px;font-size:11px;}
+    .card{
+      background:#FBF9F4;border:1px solid var(--line);border-radius:10px;
+      padding:12px 13px;margin-bottom:10px;font-size:12.5px;
+      opacity:0;animation:pop .3s ease forwards;
+    }
+    @keyframes pop{to{opacity:1;}}
+    .card .usn{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--ink);font-size:12.5px;}
+    .card .name{color:var(--slate);font-weight:600;margin-top:2px;}
+    .card .meta{color:#9B968A;font-size:11px;margin-top:3px;}
+    .card .amt{display:inline-block;margin-top:8px;background:var(--marigold);color:var(--ink);
+      font-weight:700;font-size:11px;padding:2px 9px;border-radius:6px;}
+    .card .badge{font-size:10px;font-weight:700;color:var(--teal-dark);background:#DCF4EC;
+      padding:2px 7px;border-radius:6px;display:inline-block;margin-top:8px;}
+    .card button{
+      display:block;width:100%;margin-top:10px;background:var(--teal);color:#fff;border:none;
+      padding:7px;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;
+    }
+    .card button:hover{background:var(--teal-dark);}
+    .card button:disabled{opacity:.5;cursor:not-allowed;}
+    .card.ready{border-color:var(--teal);}
+    .empty{color:#C7C2B6;font-size:12px;font-style:italic;padding:20px 0;text-align:center;}
+    .refresh-note{color:#8A8578;font-size:12px;text-align:center;margin-top:16px;}
+    .stats{display:flex;gap:16px;margin-bottom:20px;}
+    .stat-box{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+      padding:16px 20px;flex:1;text-align:center;}
+    .stat-box .num{font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;color:var(--ink);}
+    .stat-box .label{font-size:12px;color:#8A8578;margin-top:4px;}
+    .toast{
+      position:fixed;bottom:20px;right:20px;background:var(--teal-dark);color:#fff;
+      padding:12px 20px;border-radius:10px;font-size:13px;box-shadow:0 4px 20px rgba(0,0,0,.2);
+      opacity:0;transform:translateY(20px);transition:all .3s;z-index:100;
+    }
+    .toast.show{opacity:1;transform:translateY(0);}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="brand">Cont<span>X</span>pert AI</div>
+      <div class="tag">Registrar's Desk — Certificate Queue · AI-Powered Student Support</div>
+    </div>
+    <div class="controls">
+      <div class="ai-pill"><i></i>AI Active</div>
+      <a href="/admin/logout" class="ctl secondary">Logout</a>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat-box">
+      <div class="num" id="statAwaiting"><%= counts.awaiting %></div>
+      <div class="label">Awaiting Payment</div>
+    </div>
+    <div class="stat-box">
+      <div class="num" id="statProcessing"><%= counts.processing %></div>
+      <div class="label">Processing</div>
+    </div>
+    <div class="stat-box">
+      <div class="num" id="statReady"><%= counts.ready %></div>
+      <div class="label">Ready</div>
+    </div>
+  </div>
+
+  <div class="queue">
+    <div class="col" id="colAwaiting">
+      <h3>Awaiting Payment <span class="count" id="cntAwaiting"><%= counts.awaiting %></span></h3>
+      <% if (awaiting.length === 0) { %>
+        <div class="empty">No requests awaiting payment</div>
+      <% } else { %>
+        <% awaiting.forEach(req => { %>
+          <div class="card" id="req-<%= req.id %>">
+            <div class="usn"><%= req.usn %></div>
+            <div class="name"><%= req.name %></div>
+            <div class="meta"><%= req.department %> · <%= req.section %> · <%= req.type %></div>
+            <div class="amt">₹<%= req.amount %></div>
+            <div class="badge">Payment pending</div>
+          </div>
+        <% }) %>
+      <% } %>
+    </div>
+
+    <div class="col" id="colProcessing">
+      <h3>Processing <span class="count" id="cntProcessing"><%= counts.processing %></span></h3>
+      <% if (processing.length === 0) { %>
+        <div class="empty">No requests in processing</div>
+      <% } else { %>
+        <% processing.forEach(req => { %>
+          <div class="card ready" id="req-<%= req.id %>">
+            <div class="usn"><%= req.usn %></div>
+            <div class="name"><%= req.name %></div>
+            <div class="meta"><%= req.department %> · <%= req.section %> · <%= req.type %></div>
+            <div class="amt">₹<%= req.amount %> · paid</div>
+            <div class="badge">Payment confirmed</div>
+            <button onclick="markReady(<%= req.id %>)">Mark ready</button>
+          </div>
+        <% }) %>
+      <% } %>
+    </div>
+
+    <div class="col" id="colReady">
+      <h3>Ready <span class="count" id="cntReady"><%= counts.ready %></span></h3>
+      <% if (ready.length === 0) { %>
+        <div class="empty">No certificates ready</div>
+      <% } else { %>
+        <% ready.forEach(req => { %>
+          <div class="card ready" id="req-<%= req.id %>">
+            <div class="usn"><%= req.usn %></div>
+            <div class="name"><%= req.name %></div>
+            <div class="meta"><%= req.department %> · <%= req.section %> · <%= req.type %></div>
+            <div class="amt">₹<%= req.amount %> · paid</div>
+            <div class="badge">Ready for collection</div>
+          </div>
+        <% }) %>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="refresh-note">Auto-refreshes every 15 seconds · AI-powered WhatsApp notifications sent instantly</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+async function markReady(id) {
+  const btn = document.querySelector(`#req-${id} button`);
+  btn.disabled = true;
+  btn.textContent = 'Processing...';
+
+  try {
+    const res = await fetch(`/admin/api/certificates/${id}/ready`, { method: 'POST' });
+    const data = await res.json();
+
+    if (data.success) {
+      showToast('✅ Marked ready — WhatsApp notification sent to student');
+      setTimeout(() => location.reload(), 1500);
+    } else {
+      showToast('❌ ' + (data.error || 'Failed'));
+      btn.disabled = false;
+      btn.textContent = 'Mark ready';
+    }
+  } catch (err) {
+    showToast('❌ Network error');
+    btn.disabled = false;
+    btn.textContent = 'Mark ready';
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+// Auto-refresh every 15s
+setInterval(() => location.reload(), 15000);
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+COMPLETE SETUP GUIDE
+==================================================
+
+See README.md for full documentation.
+
+Quick Steps:
+1. Create accounts: Groq, Neon, Meta, Ngrok
+2. Get API keys and credentials
+3. Fill .env file
+4. npm install && npm run migrate && npm run seed
+5. npm start (Terminal 1)
+6. ngrok http --domain=YOUR_DOMAIN 3000 (Terminal 2)
+7. Configure webhook in Meta dashboard
+8. Test WhatsApp messaging
+
+Full guide in README.md

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Error — ContXpert AI</title>
+  <style>
+    body{font-family:'Inter',sans-serif;background:#FBF9F4;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;}
+    .card{background:#fff;border-radius:16px;padding:40px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.1);max-width:400px;}
+    h1{color:#1B2A4A;font-family:'Space Grotesk',sans-serif;}
+    p{color:#8A8578;margin:16px 0 24px;}
+    a{color:#2E7D6B;text-decoration:none;font-weight:600;}
+    a:hover{text-decoration:underline;}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>⚠️ Something went wrong</h1>
+    <p><%= message || 'An unexpected error occurred.' %></p>
+    <a href="/admin">← Back to Dashboard</a>
+  </div>
+</body>
+</html>
