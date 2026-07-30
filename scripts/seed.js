@@ -9,7 +9,7 @@ async function seed() {
 
     // Seed students
     const students = [
-      { usn: '4MC22CS070', name: 'Rakesh H N', dob: '2004-03-14', dept: 'CSE', section: 'B', sem: 6 },
+      { usn: '4MC22CS070', name: 'Rakesh H N', dob: '2004-03-14', dept: 'CSE', section: 'B', sem: 5 },
       { usn: '4MC22CS071', name: 'Priya S', dob: '2004-06-22', dept: 'CSE', section: 'B', sem: 6 },
       { usn: '4MC22CS072', name: 'Arun Kumar', dob: '2003-11-05', dept: 'CSE', section: 'A', sem: 6 },
       { usn: '4MC23CS052', name: 'Gowtham V', dob: '2004-01-15', dept: 'CSE', section: 'A', sem: 4 },
