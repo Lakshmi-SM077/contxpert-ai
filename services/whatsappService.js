@@ -3,6 +3,9 @@ const axios = require('axios');
 const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
 const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
 const TWILIO_WHATSAPP_NUMBER = process.env.TWILIO_WHATSAPP_NUMBER;
+// This is the ContXpert native list-picker template created in the connected
+// Twilio account. An environment variable can override it for another account.
+const MENU_CONTENT_SID = process.env.TWILIO_MENU_CONTENT_SID || 'HXc4f5f429dea02ddb2dfaa9e6c02aa25b';
 const BASE_URL = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}`;
 
 async function sendTextMessage(to, text) {
@@ -71,8 +74,37 @@ async function sendListMessage(to, text, sections) {
   return await sendTextMessage(to, listText);
 }
 
+async function sendServiceMenu(to, studentName) {
+  if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_WHATSAPP_NUMBER) {
+    console.log('[WhatsApp] Mock menu to', to);
+    return { success: true, mock: true };
+  }
+
+  if (!MENU_CONTENT_SID) {
+    return sendTextMessage(to,
+      `Hi ${studentName}! Reply with one option: Attendance, CIE marks, Exam history, Fee status, Timetable, Certificates, or Notifications.`);
+  }
+
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/Messages.json`,
+      new URLSearchParams({
+        From: TWILIO_WHATSAPP_NUMBER,
+        To: to.startsWith('whatsapp:') ? to : `whatsapp:${to}`,
+        ContentSid: MENU_CONTENT_SID
+      }),
+      { auth: { username: TWILIO_ACCOUNT_SID, password: TWILIO_AUTH_TOKEN } }
+    );
+    return { success: true, messageId: response.data.sid };
+  } catch (error) {
+    console.error('[WhatsApp] Menu send error:', error.response?.data || error.message);
+    return sendTextMessage(to, 'Type menu to view services.');
+  }
+}
+
 module.exports = {
   sendTextMessage,
   sendInteractiveButtons,
-  sendListMessage
+  sendListMessage,
+  sendServiceMenu
 };

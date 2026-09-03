@@ -49,7 +49,8 @@ router.post('/', async (req, res) => {
   try {
     // Twilio webhook format
     const phoneNumber = req.body.From || req.body.from;
-    const text = req.body.Body || req.body.body || '';
+    // Taps on a native WhatsApp list return the stable item id as ButtonPayload.
+    const text = req.body.ButtonPayload || req.body.buttonPayload || req.body.ButtonText || req.body.buttonText || req.body.Body || req.body.body || '';
 
     if (!phoneNumber || !text) {
       console.log('[Webhook] Missing phone number or message body');

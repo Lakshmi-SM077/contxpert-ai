@@ -1,4 +1,4 @@
-const { sendTextMessage, sendInteractiveButtons, sendListMessage } = require('../services/whatsappService');
+const { sendTextMessage, sendInteractiveButtons, sendListMessage, sendServiceMenu } = require('../services/whatsappService');
 const { updateSession } = require('../services/sessionManager');
 const { detectIntent, generateResponse, retrieveContext } = require('../services/aiEngine');
 
@@ -16,7 +16,7 @@ async function showMenu(phoneNumber, studentData) {
   const menuText = "Hi " + studentData.name + "! What would you like to check?\n\n" +
     MENU_OPTIONS.map(o => o.title + " — " + o.description).join("\n");
 
-  await sendTextMessage(phoneNumber, menuText);
+  await sendServiceMenu(phoneNumber, studentData.name);
   await updateSession(phoneNumber, 'menu_shown', {});
 }
 
