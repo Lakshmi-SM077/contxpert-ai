@@ -8,6 +8,7 @@
     "dev": "nodemon server.js",
     "migrate": "node scripts/migrate.js",
     "seed": "node scripts/seed.js",
+    "seed:mock": "node scripts/seedMockStudentData.js",
     "test": "node scripts/test-ai.js"
   },
   "dependencies": {
