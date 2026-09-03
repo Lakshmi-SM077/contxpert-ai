@@ -107,6 +107,15 @@ async function routeMessage(phoneNumber, text, session, intentResult) {
     return;
   }
 
+  // A service command must always win over an unfinished flow. For example,
+  // “attendance” exits certificate selection instead of being treated as a
+  // certificate option. This also accepts the common “attendence” spelling.
+  const selectedService = resolveService(text, intentResult.intent);
+  if (selectedService && session.data?.studentId) {
+    await routeSelectedService(phoneNumber, text, session, selectedService);
+    return;
+  }
+
   // State-based routing
   switch (state) {
     case 'unregistered':
@@ -201,6 +210,42 @@ async function routeMessage(phoneNumber, text, session, intentResult) {
         await sendTextMessage(phoneNumber, 
           "I'm not sure how to help with that. Type 'menu' for options or 'hi' to start.");
       }
+  }
+}
+
+function resolveService(text, detectedIntent) {
+  const value = text.toLowerCase().trim().replace(/\s+/g, ' ');
+  if (/\b(attendance|attendence|attend|present)\b/.test(value)) return 'attendance';
+  if (/\b(cie|marks?|internal)\b/.test(value)) return 'marks';
+  if (/\b(exam history|results?|sgpa|cgpa)\b/.test(value)) return 'exam_history';
+  if (/\b(fee|fees|payment|balance|due)\b/.test(value)) return 'fee';
+  if (/\b(timetable|schedule|class)\b/.test(value)) return 'timetable';
+  if (/\b(certificates?|bonafide|migration|transcript)\b/.test(value)) return 'certificate';
+  if (/\b(notifications?|alerts?|announcements?)\b/.test(value)) return 'notification';
+  return ['attendance', 'marks', 'fee', 'timetable', 'certificate', 'notification'].includes(detectedIntent)
+    ? detectedIntent
+    : null;
+}
+
+async function routeSelectedService(phoneNumber, text, session, service) {
+  const stateByService = {
+    attendance: 'viewing_attendance', marks: 'viewing_marks',
+    exam_history: 'viewing_exam_history', fee: 'viewing_fee',
+    timetable: 'viewing_timetable', certificate: 'requesting_certificate',
+    notification: 'viewing_notifications'
+  };
+  const nextState = stateByService[service];
+  await updateSession(phoneNumber, nextState, session.data);
+  const freshSession = { ...session, state: nextState };
+
+  switch (service) {
+    case 'attendance': return handleAttendance(phoneNumber, text, freshSession);
+    case 'marks': return handleCIE(phoneNumber, text, freshSession);
+    case 'exam_history': return handleExamHistory(phoneNumber, text, freshSession);
+    case 'fee': return handleFee(phoneNumber, text, freshSession);
+    case 'timetable': return handleTimetable(phoneNumber, text, freshSession);
+    case 'certificate': return handleCertificate(phoneNumber, text, freshSession);
+    case 'notification': return handleNotifications(phoneNumber, text, freshSession);
   }
 }
 
