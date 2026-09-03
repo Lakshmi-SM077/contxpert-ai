@@ -8,11 +8,11 @@ async function seed() {
 
     // Seed students
     const students = [
-      { usn: '4MC22CS070', name: 'Rakesh H N', dob: '2004-03-14', dept: 'CSE', section: 'B', sem: 6 },
+      { usn: '4MC22CS070', name: 'Rakesh H N', dob: '2004-03-14', dept: 'CSE', section: 'B', sem: 5 },
       { usn: '4MC22CS071', name: 'Priya S', dob: '2004-06-22', dept: 'CSE', section: 'B', sem: 6 },
       { usn: '4MC22CS072', name: 'Arun Kumar', dob: '2003-11-05', dept: 'CSE', section: 'A', sem: 6 },
       { usn: '4MC23CS052', name: 'Gowtham V', dob: '2004-01-15', dept: 'CSE', section: 'A', sem: 4 },
-      { usn: '4MC23CS077', name: 'Lakshmi S M', dob: '2005-09-10', dept: 'CSE', section: 'B', sem: 4 },
+      { usn: '4MC23CS077', name: 'Lakshmi S M', dob: '2005-05-26', dept: 'CSE', section: 'B', sem: 4 },
       { usn: '4MC23CS078', name: 'Lekhana B S', dob: '2004-12-03', dept: 'CSE', section: 'B', sem: 4 },
       { usn: '4MC22CS073', name: 'Ananya Rao', dob: '2004-02-18', dept: 'CSE', section: 'A', sem: 6 },
       { usn: '4MC22CS074', name: 'Vivek N', dob: '2003-07-09', dept: 'CSE', section: 'A', sem: 6 },
