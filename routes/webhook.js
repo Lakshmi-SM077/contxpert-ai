@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
 
-const { getSession, createSession, updateSession, addToHistory, getHistory } = require('../services/sessionManager');
+const { getSession, createSession, updateSession, addToHistory, getHistory, restoreVerifiedSession } = require('../services/sessionManager');
 const { detectIntent, detectIntentWithContext, generateResponse, retrieveContext } = require('../services/aiEngine');
 const { sendTextMessage } = require('../services/whatsappService');
 
@@ -16,6 +16,7 @@ const { handleTimetable } = require('../controllers/timetableController');
 const { handleCertificate } = require('../controllers/certificateController');
 const { handleNotifications } = require('../controllers/notificationController');
 
+const { normalizePhone } = require('../services/identityService');
 const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || 'contXpert_verify_123';
 
 // Webhook Verification (Meta requires this - kept for backward compatibility)
@@ -56,14 +57,19 @@ router.post('/', async (req, res) => {
     }
 
     // Clean phone number (remove 'whatsapp:' prefix if present)
-    const cleanPhone = phoneNumber.replace('whatsapp:', '').replace('+', '');
+    const cleanPhone = normalizePhone(phoneNumber);
 
     console.log(`[Webhook] From: ${phoneNumber}, Text: "${text.substring(0, 50)}"`);
 
     let session = await getSession(cleanPhone);
     if (!session) {
-      await createSession(cleanPhone, 'unregistered');
-      session = await getSession(cleanPhone);
+      // A verified number remains logged in even if its temporary session is
+      // cleared or the service restarts. A number can only belong to one USN.
+      session = await restoreVerifiedSession(cleanPhone);
+      if (!session) {
+        await createSession(cleanPhone, 'unregistered');
+        session = await getSession(cleanPhone);
+      }
     }
 
     const intentResult = detectIntentWithContext(text, session.data?.history || []);

@@ -71,6 +71,12 @@
     .empty{color:#C7C2B6;font-size:12px;font-style:italic;padding:20px 0;text-align:center;}
     .refresh-note{color:#8A8578;font-size:12px;text-align:center;margin-top:16px;}
     .stats{display:flex;gap:16px;margin-bottom:20px;}
+    .quick-actions{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 20px;}
+    .notice-box{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:20px;}
+    .notice-box h2{font-size:16px;color:var(--ink);margin-bottom:12px;}
+    .notice-fields{display:grid;grid-template-columns:1fr 150px;gap:10px;}
+    .notice-fields textarea{grid-column:1/-1;min-height:76px;resize:vertical;}
+    .notice-fields input,.notice-fields select,.notice-fields textarea{border:1px solid var(--line);border-radius:8px;padding:10px;font:inherit;}
     .stat-box{background:var(--panel);border:1px solid var(--line);border-radius:12px;
       padding:16px 20px;flex:1;text-align:center;}
     .stat-box .num{font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;color:var(--ink);}
@@ -92,6 +98,7 @@
     </div>
     <div class="controls">
       <div class="ai-pill"><i></i>AI Active</div>
+      <a href="/admin/students" class="ctl secondary">Students →</a>
       <a href="/admin/logout" class="ctl secondary">Logout</a>
     </div>
   </header>
@@ -110,6 +117,21 @@
       <div class="label">Ready</div>
     </div>
   </div>
+
+  <div class="quick-actions">
+    <a href="/admin/students" class="ctl">Manage student credentials →</a>
+    <% if (botMenuLink) { %><a href="<%= botMenuLink %>" target="_blank" rel="noopener" class="ctl secondary">Open WhatsApp menu →</a><% } %>
+  </div>
+
+  <section class="notice-box">
+    <h2>Send an AI-assisted student alert</h2>
+    <form id="notificationForm" class="notice-fields">
+      <input name="title" maxlength="200" placeholder="Alert title (e.g., CIE reminder)" required>
+      <select name="type"><option value="general">General</option><option value="academic">Academic</option><option value="urgent">Urgent</option></select>
+      <textarea name="message" placeholder="Write the message students should receive on WhatsApp" required></textarea>
+      <button class="ctl" type="submit">Send to verified students →</button>
+    </form>
+  </section>
 
   <div class="queue">
     <div class="col" id="colAwaiting">
@@ -201,6 +223,26 @@ function showToast(msg) {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 4000);
 }
+
+document.getElementById('notificationForm').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const button = form.querySelector('button');
+  button.disabled = true;
+  button.textContent = 'Sending…';
+  try {
+    const res = await fetch('/admin/notifications', { method: 'POST', body: new URLSearchParams(new FormData(form)) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Could not send alert');
+    showToast(`✓ Alert sent to ${data.sent} of ${data.total} verified students`);
+    form.reset();
+  } catch (err) {
+    showToast('✕ ' + err.message);
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Send to verified students →';
+  }
+});
 
 // Auto-refresh every 15s
 setInterval(() => location.reload(), 15000);

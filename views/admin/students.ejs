@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ContXpert AI — Student credentials</title>
+  <style>
+    :root{--ink:#1B2A4A;--paper:#FBF9F4;--teal:#2E7D6B;--line:#E4DFD3;--panel:#fff}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:#3A3F47;font-family:Inter,system-ui,sans-serif;padding:28px 20px 60px}.wrap{max-width:1180px;margin:auto}header{display:flex;justify-content:space-between;gap:14px;align-items:center;border-bottom:2px solid var(--ink);padding-bottom:16px;margin-bottom:20px}.brand{font-size:25px;font-weight:800;color:var(--ink)}.brand span{color:var(--teal)}.sub{font-size:13px;color:#777;margin-top:4px}.btn{display:inline-block;background:var(--teal);color:#fff;text-decoration:none;border:0;border-radius:8px;padding:10px 15px;font-weight:700;cursor:pointer}.btn.secondary{background:#fff;color:var(--ink);border:1px solid var(--ink)}.tip,.saved{padding:13px 15px;border-radius:10px;margin:0 0 16px;font-size:13px}.tip{background:#eaf5f1}.saved{background:#dcf4ec;color:#215a4e}.table-wrap{overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px}table{border-collapse:collapse;width:100%;min-width:850px}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;font-size:13px}th{background:#f4f0e8;color:var(--ink)}input{width:100%;min-width:90px;padding:8px;border:1px solid #d8d2c5;border-radius:6px;font:inherit}.usn{text-transform:uppercase}.small{font-size:11px;color:#777}@media(max-width:600px){body{padding:16px 10px}header{align-items:flex-start;flex-direction:column}}
+  </style>
+</head>
+<body><main class="wrap">
+  <header><div><div class="brand">Cont<span>X</span>pert AI</div><div class="sub">Student credentials — administrator access only</div></div><div><a href="/admin" class="btn secondary">← Dashboard</a> <% if (botMenuLink) { %><a class="btn" target="_blank" rel="noopener" href="<%= botMenuLink %>">WhatsApp menu →</a><% } %></div></header>
+  <% if (saved) { %><div class="saved">✓ Student record updated. The mobile number remains locked to this USN until an administrator changes it again.</div><% } %>
+  <div class="tip"><strong>One-time verification:</strong> a WhatsApp number can belong to only one USN. Students cannot change their mobile number; clear or replace it here only after confirming their identity.</div>
+  <div class="table-wrap"><table><thead><tr><th>USN</th><th>Name</th><th>Department</th><th>Section</th><th>Semester</th><th>Verified mobile (country code)</th><th></th></tr></thead><tbody>
+  <% students.forEach(student => { %><tr><form method="POST" action="/admin/students/<%= student.id %>"><td><input class="usn" name="usn" value="<%= student.usn %>" required></td><td><input name="name" value="<%= student.name %>" required></td><td><input name="department" value="<%= student.department %>" required></td><td><input name="section" value="<%= student.section %>" required></td><td><input type="number" min="1" max="12" name="semester" value="<%= student.semester %>" required></td><td><input inputmode="numeric" name="phone_number" value="<%= student.phone_number || '' %>" placeholder="e.g. 919876543210"><div class="small">Leave blank to unlink</div></td><td><button class="btn" type="submit">Save →</button></td></form></tr><% }) %>
+  </tbody></table></div>
+</main></body></html>

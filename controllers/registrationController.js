@@ -2,6 +2,7 @@ const pool = require('../config/database');
 const { sendTextMessage, sendInteractiveButtons } = require('../services/whatsappService');
 const { updateSession, addToHistory } = require('../services/sessionManager');
 const { detectIntent, generateResponse } = require('../services/aiEngine');
+const { normalizePhone, normalizeUsn, studentSessionData } = require('../services/identityService');
 
 async function handleRegistration(phoneNumber, text, session) {
   const state = session?.state || 'unregistered';
@@ -25,7 +26,7 @@ async function handleRegistration(phoneNumber, text, session) {
       break;
 
     case 'awaiting_usn':
-      const usn = text.trim().toUpperCase();
+      const usn = normalizeUsn(text);
       const usnPattern = /^\d[A-Z]{2}\d{2}[A-Z]{2}\d{3}$/;
 
       if (!usnPattern.test(usn)) {
@@ -36,7 +37,7 @@ async function handleRegistration(phoneNumber, text, session) {
 
       // Check if USN exists
       const student = await pool.query(
-        'SELECT * FROM students WHERE usn = $1',
+        'SELECT * FROM students WHERE UPPER(usn) = $1',
         [usn]
       );
 
@@ -46,13 +47,31 @@ async function handleRegistration(phoneNumber, text, session) {
         return;
       }
 
-      await updateSession(phoneNumber, 'awaiting_dob', { 
+      const matchedStudent = student.rows[0];
+      const normalizedPhone = normalizePhone(phoneNumber);
+      if (matchedStudent.phone_number && normalizePhone(matchedStudent.phone_number) !== normalizedPhone) {
+        await sendTextMessage(phoneNumber,
+          'This USN is already linked to another mobile number. Only an administrator can change the registered number.');
+        return;
+      }
+
+      const mobileOwner = await pool.query(
+        'SELECT usn FROM students WHERE phone_number = $1 AND id <> $2',
+        [normalizedPhone, matchedStudent.id]
+      );
+      if (mobileOwner.rows.length > 0) {
+        await sendTextMessage(phoneNumber,
+          'This mobile number is already registered to another USN. Please use your registered number or contact the administrator.');
+        return;
+      }
+
+      await updateSession(phoneNumber, 'awaiting_dob', {
         usn, 
-        studentId: student.rows[0].id,
+        studentId: matchedStudent.id,
         step: 'registration' 
       });
       await sendTextMessage(phoneNumber, 
-        `Found ${student.rows[0].name} (${usn}).\n\nNow enter your Date of Birth (DD-MM-YYYY) to confirm:`);
+        `Found ${matchedStudent.name} (${usn}).\n\nNow enter your Date of Birth (DD-MM-YYYY) to confirm:`);
       break;
 
     case 'awaiting_dob':
@@ -83,20 +102,21 @@ async function handleRegistration(phoneNumber, text, session) {
 
       const studentData = verify.rows[0];
 
-      // Link phone number to student
-      await pool.query(
-        'UPDATE students SET phone_number = $1 WHERE id = $2',
-        [phoneNumber, studentData.id]
+      // Atomically link the WhatsApp number. This protects both the USN and
+      // mobile identity from being claimed by another student.
+      const linked = await pool.query(
+        `UPDATE students SET phone_number = $1
+         WHERE id = $2 AND (phone_number IS NULL OR phone_number = $1)
+         RETURNING *`,
+        [normalizePhone(phoneNumber), studentData.id]
       );
+      if (linked.rowCount === 0) {
+        await sendTextMessage(phoneNumber,
+          'This USN is already linked to another mobile number. Please contact the administrator.');
+        return;
+      }
 
-      await updateSession(phoneNumber, 'registered', {
-        studentId: studentData.id,
-        usn: studentData.usn,
-        name: studentData.name,
-        dept: studentData.department,
-        section: studentData.section,
-        semester: studentData.semester
-      });
+      await updateSession(phoneNumber, 'registered', studentSessionData(studentData));
 
       await sendTextMessage(phoneNumber,
         `✅ Verified! Welcome, ${studentData.name} (${studentData.usn})\n` +

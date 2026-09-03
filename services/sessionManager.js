@@ -1,4 +1,5 @@
 const pool = require('../config/database');
+const { normalizePhone, studentSessionData } = require('./identityService');
 
 async function getSession(phoneNumber) {
   const result = await pool.query(
@@ -56,11 +57,26 @@ async function clearSession(phoneNumber) {
   );
 }
 
+async function restoreVerifiedSession(phoneNumber) {
+  const normalizedPhone = normalizePhone(phoneNumber);
+  const result = await pool.query(
+    `SELECT id, usn, name, department, section, semester
+     FROM students WHERE phone_number = $1`,
+    [normalizedPhone]
+  );
+  if (!result.rows[0]) return null;
+
+  const data = studentSessionData(result.rows[0]);
+  await createSession(normalizedPhone, 'registered', data);
+  return getSession(normalizedPhone);
+}
+
 module.exports = {
   getSession,
   createSession,
   updateSession,
   addToHistory,
   getHistory,
-  clearSession
+  clearSession,
+  restoreVerifiedSession
 };

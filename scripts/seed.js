@@ -4,8 +4,7 @@ async function seed() {
   console.log('Seeding data...\n');
 
   try {
-    await pool.query('TRUNCATE TABLE analytics, notifications, certificate_requests, timetable, fee_status, exam_history, cie_marks, attendance, sessions CASCADE');
-    await pool.query('DELETE FROM students');
+    // Demo data is additive: never wipe real students or their records.
 
     // Seed students
     const students = [
@@ -13,14 +12,31 @@ async function seed() {
       { usn: '4MC22CS071', name: 'Priya S', dob: '2004-06-22', dept: 'CSE', section: 'B', sem: 6 },
       { usn: '4MC22CS072', name: 'Arun Kumar', dob: '2003-11-05', dept: 'CSE', section: 'A', sem: 6 },
       { usn: '4MC23CS052', name: 'Gowtham V', dob: '2004-01-15', dept: 'CSE', section: 'A', sem: 4 },
-      { usn: '4MC23CS077', name: 'Lakshmi S M', dob: '2005S-09-10', dept: 'CSE', section: 'B', sem: 4 },
-      { usn: '4MC23CS078', name: 'Lekhana B S', dob: '2004-12-03', dept: 'CSE', section: 'B', sem: 4 }
+      { usn: '4MC23CS077', name: 'Lakshmi S M', dob: '2005-09-10', dept: 'CSE', section: 'B', sem: 4 },
+      { usn: '4MC23CS078', name: 'Lekhana B S', dob: '2004-12-03', dept: 'CSE', section: 'B', sem: 4 },
+      { usn: '4MC22CS073', name: 'Ananya Rao', dob: '2004-02-18', dept: 'CSE', section: 'A', sem: 6 },
+      { usn: '4MC22CS074', name: 'Vivek N', dob: '2003-07-09', dept: 'CSE', section: 'A', sem: 6 },
+      { usn: '4MC22CS075', name: 'Meera Iyer', dob: '2004-10-26', dept: 'CSE', section: 'B', sem: 6 },
+      { usn: '4MC22CS076', name: 'Kiran P', dob: '2004-05-12', dept: 'CSE', section: 'B', sem: 6 },
+      { usn: '4MC23CS053', name: 'Nisha Kulkarni', dob: '2005-01-21', dept: 'CSE', section: 'A', sem: 4 },
+      { usn: '4MC23CS054', name: 'Aditya R', dob: '2004-08-30', dept: 'CSE', section: 'A', sem: 4 },
+      { usn: '4MC23CS055', name: 'Pooja M', dob: '2005-04-16', dept: 'CSE', section: 'B', sem: 4 },
+      { usn: '4MC23CS056', name: 'Rahul S', dob: '2004-11-02', dept: 'CSE', section: 'B', sem: 4 },
+      { usn: '4MC24CS031', name: 'Sneha Reddy', dob: '2005-06-11', dept: 'CSE', section: 'A', sem: 2 },
+      { usn: '4MC24CS032', name: 'Arjun B', dob: '2005-12-07', dept: 'CSE', section: 'A', sem: 2 },
+      { usn: '4MC24CS033', name: 'Kavya N', dob: '2006-03-19', dept: 'CSE', section: 'B', sem: 2 },
+      { usn: '4MC24CS034', name: 'Siddharth K', dob: '2005-09-24', dept: 'CSE', section: 'B', sem: 2 },
+      { usn: '4MC24CS035', name: 'Divya S', dob: '2006-01-05', dept: 'CSE', section: 'A', sem: 2 },
+      { usn: '4MC24CS036', name: 'Manoj V', dob: '2005-07-28', dept: 'CSE', section: 'B', sem: 2 }
     ];
 
     for (const s of students) {
       await pool.query(
         `INSERT INTO students (usn, name, dob, department, section, semester)
-         VALUES ($1, $2, $3, $4, $5, $6)`,
+         VALUES ($1, $2, $3, $4, $5, $6)
+         ON CONFLICT (usn) DO UPDATE SET
+           name = EXCLUDED.name, dob = EXCLUDED.dob, department = EXCLUDED.department,
+           section = EXCLUDED.section, semester = EXCLUDED.semester`,
         [s.usn, s.name, s.dob, s.dept, s.section, s.sem]
       );
     }

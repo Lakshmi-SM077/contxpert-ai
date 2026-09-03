@@ -35,6 +35,12 @@ async function migrate() {
       )
     `);
     await addColumnIfNotExists('students', 'phone_number', 'VARCHAR(20)');
+    // Identity values are canonicalised so a USN or mobile number cannot be
+    // registered twice using a different case or formatting.
+    await pool.query(`UPDATE students SET usn = UPPER(TRIM(usn))`);
+    await pool.query(`UPDATE students SET phone_number = NULLIF(regexp_replace(phone_number, '\\D', '', 'g'), '') WHERE phone_number IS NOT NULL`);
+    await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS students_usn_case_insensitive_unique ON students (UPPER(usn))`);
+    await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS students_phone_number_unique ON students (phone_number) WHERE phone_number IS NOT NULL`);
     console.log('students');
 
     // Sessions table
