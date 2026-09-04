@@ -81,6 +81,12 @@ async function handleCertificate(phoneNumber, text, session) {
       const certType = session.data.pendingCertificate;
       const cert = CERTIFICATE_TYPES[certType];
 
+      if (lowerText.trim() === 'cancel') {
+        await updateSession(phoneNumber, 'registered', studentData);
+        await sendTextMessage(phoneNumber, 'Certificate request cancelled. Type "menu" to choose another service.');
+        return;
+      }
+
       const payment = await createPaymentLink(
         cert.fee,
         `${cert.name} for ${studentData.name} (${studentData.usn})`,
@@ -112,6 +118,15 @@ ${payment.link}
       } else {
         await sendTextMessage(phoneNumber, 
           "Sorry, I couldn't generate the payment link. Please try again later.");
+      }
+      break;
+
+    case 'payment_pending':
+      if (lowerText.trim() === 'cancel') {
+        await updateSession(phoneNumber, 'registered', studentData);
+        await sendTextMessage(phoneNumber, 'Certificate request cancelled. Type "menu" to choose another service.');
+      } else if (studentData.paymentLink) {
+        await sendTextMessage(phoneNumber, `Your payment link is:\n${studentData.paymentLink}`);
       }
       break;
 

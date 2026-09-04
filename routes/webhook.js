@@ -111,6 +111,13 @@ async function routeMessage(phoneNumber, text, session, intentResult) {
   // “attendance” exits certificate selection instead of being treated as a
   // certificate option. This also accepts the common “attendence” spelling.
   const selectedService = resolveService(text, intentResult.intent);
+  const isCertificateInput =
+    (state === 'selecting_certificate_type' && /^[1-5]$/.test(lowerText)) ||
+    ((state === 'awaiting_payment' || state === 'payment_pending') && /^(pay|cancel)$/i.test(lowerText));
+  if (isCertificateInput) {
+    await handleCertificate(phoneNumber, text, session);
+    return;
+  }
   if (selectedService && session.data?.studentId) {
     await routeSelectedService(phoneNumber, text, session, selectedService);
     return;
@@ -215,6 +222,12 @@ async function routeMessage(phoneNumber, text, session, intentResult) {
 
 function resolveService(text, detectedIntent) {
   const value = text.toLowerCase().trim().replace(/\s+/g, ' ');
+  const payloadServiceMap = {
+    attendance: 'attendance', marks: 'marks', cie: 'marks',
+    exam_history: 'exam_history', fee: 'fee', timetable: 'timetable',
+    certificate: 'certificate', notification: 'notification'
+  };
+  if (payloadServiceMap[value]) return payloadServiceMap[value];
   if (/\b(attendance|attendence|attend|present)\b/.test(value)) return 'attendance';
   if (/\b(cie|marks?|internal)\b/.test(value)) return 'marks';
   if (/\b(exam history|results?|sgpa|cgpa)\b/.test(value)) return 'exam_history';
@@ -222,7 +235,7 @@ function resolveService(text, detectedIntent) {
   if (/\b(timetable|schedule|class)\b/.test(value)) return 'timetable';
   if (/\b(certificates?|bonafide|migration|transcript)\b/.test(value)) return 'certificate';
   if (/\b(notifications?|alerts?|announcements?)\b/.test(value)) return 'notification';
-  return ['attendance', 'marks', 'fee', 'timetable', 'certificate', 'notification'].includes(detectedIntent)
+  return ['attendance', 'marks', 'exam_history', 'fee', 'timetable', 'certificate', 'notification'].includes(detectedIntent)
     ? detectedIntent
     : null;
 }
